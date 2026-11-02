@@ -1,0 +1,43 @@
+name: Build Universal AI APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Extract project
+        run: |
+          unzip universal_ai_phone_build.zip -d extracted
+          cp -r extracted/universal_ai/. .
+
+      - name: Generate Android project
+        run: flutter create --platforms=android .
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Universal-AI-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
